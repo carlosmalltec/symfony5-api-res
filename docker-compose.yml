@@ -1,0 +1,62 @@
+version: "3.1"
+services:  
+  redis:
+    image: redis:alpine
+    container_name: baselab_redis
+    working_dir: /application
+    volumes:
+     - ./application:/application
+     - ./docker/redis/config/redis.conf:/etc/redis.conf
+
+  mariadb:
+    image: mariadb:latest
+    container_name: baselab_mariadb
+    working_dir: /var/lib/mysql/
+    volumes:
+      - ./database/mariadb:/var/lib/mysql/
+      # - ./database/data.sql:/docker-entrypoint-initdb.d/data.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=senha123
+      - MYSQL_DATABASE=baselab
+      - MYSQL_USER=baselab
+      - MYSQL_PASSWORD=baselab123
+    ports:
+      - "3306:3306"
+
+  fix-mongodb-permissions:
+    image: 'bitnami/mongodb:latest'
+    user: root
+    command: chown -R 1001:1001 /bitnami/
+    volumes:
+      - ./database/mongodb:/bitnami/mongodb/
+  mongodb:
+    image: bitnami/mongodb:latest
+    container_name: baselab_mongodb
+    working_dir: /var/
+    volumes:
+      - ./database/mongodb:/bitnami/mongodb/
+    ports:
+      - "27017:27017"
+    depends_on:
+      - fix-mongodb-permissions
+
+  webserverl:
+    image: nginx:alpine
+    container_name: baselab_web
+    working_dir: /application
+    volumes:
+      - ./application:/application
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+
+  php-fpm:
+    build: docker/php-fpm
+    container_name: baselab_php
+    working_dir: /application
+    volumes:
+      - ./application:/application
+      - ./docker/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+      - ./docker/php-fpm/php-fpm.conf:/etc/php-fpm.conf
+
+  
