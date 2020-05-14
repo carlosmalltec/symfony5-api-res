@@ -2,7 +2,7 @@ version: "3.1"
 services:  
   redis:
     image: redis:alpine
-    container_name: baselab_redis
+    container_name: symfony_redis
     working_dir: /application
     volumes:
      - ./application:/application
@@ -10,7 +10,7 @@ services:
 
   mariadb:
     image: mariadb:latest
-    container_name: baselab_mariadb
+    container_name: symfony_mariadb
     working_dir: /var/lib/mysql/
     volumes:
       - ./database/mariadb:/var/lib/mysql/
@@ -31,7 +31,7 @@ services:
       - ./database/mongodb:/bitnami/mongodb/
   mongodb:
     image: bitnami/mongodb:latest
-    container_name: baselab_mongodb
+    container_name: symfony_mongodb
     working_dir: /var/
     volumes:
       - ./database/mongodb:/bitnami/mongodb/
@@ -42,7 +42,7 @@ services:
 
   webserverl:
     image: nginx:alpine
-    container_name: baselab_web
+    container_name: symfony_web
     working_dir: /application
     volumes:
       - ./application:/application
@@ -52,7 +52,7 @@ services:
 
   php-fpm:
     build: docker/php-fpm
-    container_name: baselab_php
+    container_name: symfony_php
     working_dir: /application
     volumes:
       - ./application:/application

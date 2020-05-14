@@ -17,3 +17,9 @@ NGINX_VERSION=1.17.10
 Creating a "symfony/skeleton" project at "./apirest"
 Installing symfony/skeleton (v5.0.99)
   - Installing symfony/skeleton (v5.0.99): Downloading (100%) 
+
+  pacotes:
+
+  docker exec -it symfony_php composer require annotation
+  docker exec -it symfony_php composer require orm-pack
+  docker exec -it symfony_php composer require maker
