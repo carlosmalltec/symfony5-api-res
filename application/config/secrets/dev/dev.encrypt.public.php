@@ -1,0 +1,3 @@
+<?php // dev.encrypt.public on Fri, 15 May 2020 05:25:18 +0000
+
+return "\xDB\x5Ei\xEFh\x9BUkgd3\xF6\xFC\x9E\x2FQ\xF3\xC6LV\xDBu\x7D7\x9E\x40M\xA8aQ\x0Cr";

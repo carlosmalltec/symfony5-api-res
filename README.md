@@ -25,8 +25,7 @@ Installing symfony/skeleton (v5.0.99)
   docker exec -it symfony_php composer require maker
   docker exec -it symfony_php composer require serializer
 
-  docker exec -it symfony_php composer require security
-  docker exec -it symfony_php composer require firebase/php-jwt
+
 
 
   1 - Criar uma entidade (entity) - A estrutura da tabela
@@ -61,4 +60,34 @@ saida
   usuario_create   POST        ANY      ANY    /usuario/{id}             
   usuario_update   PUT|PATCH   ANY      ANY    /usuario/{id}             
   usuario_delete   DELETE      ANY      ANY    /usuario/{id} 
+
+### JWT
+
+  docker exec -it symfony_php composer require security
+  docker exec -it symfony_php composer require firebase/php-jwt
+
+  1 - O proprio framework fornece um processo para criar o User
+  docker exec -it symfony_php bin/console make:user
+  docker exec -it symfony_php bin/console make:migration
+  docker exec -it symfony_php bin/console doctrine:migrations:migrate
+  
+  resultado: 
+  CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, UNIQUE INDEX UNIQ_8D93D649F85E0677 (username), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+     -> ALTER TABLE usuario CHANGE updated_at updated_at DATETIME DEFAULT NULL
+
+  2 - criar dados de testes
+  docker exec -it symfony_php composer require orm-fixtures
+  docker exec -it symfony_php bin/console make:fixtures
+
+  Para gerar senha pelo terminal
+  docker exec -it symfony_php bin/console security:encode-password
+
+  depois de criar os dados em UserDados
+
+  rodar o comando para gravrar os dados no banco
+
+  docker exec -it symfony_php bin/console doctrine:fixtures:load
+
+
+  
 
