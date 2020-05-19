@@ -10,8 +10,46 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+/**
+ * Prefixo para cada rota da controller
+ * @Route("/usuario", name="usuario_")
+ */
 class LoginController extends AbstractController
 {
+    /**
+     * @Route("/index", name="index", methods="GET")
+     */
+    public function index(): Response
+    {
+        try {
+            if (!empty($usuario = $this->getDoctrine()->getRepository(User::class)->findAll())) {
+                return $this->json(
+                    $usuario
+                );
+            }
+            throw new \Exception('Não existe dado cadastrado');
+        } catch (\Exception $th) {
+            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * @Route("/view/{id}", name="view", methods={"GET"})
+     */
+    public function view(int $id)
+    {
+        try {
+            if (!empty($usuario = $this->getDoctrine()->getRepository(User::class)->find($id))) {
+                return $this->json(
+                    $usuario
+                );
+            }
+            throw new \Exception('Não foi possível encontrar o usuário');
+        } catch (\Exception $th) {
+            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
     /**
      * @Route("/create", name="create", methods={"POST"})
      */
@@ -20,14 +58,14 @@ class LoginController extends AbstractController
         try {
             $data = json_decode($req->getContent());
             $doctrine  = $this->getDoctrine();
-            if (empty($data->login))
+            if (empty($data->username))
                 throw new \Exception('Login é obrigatório');
-            if (empty($data->senha))
+            if (empty($data->password))
                 throw new \Exception('Senha é obrigatório');
 
             $user = new User();
-            $user->setUsername($data->login);
-            $user->setPassword($encoder->encodePassword($user, $data->senha));
+            $user->setUsername($data->username);
+            $user->setPassword($encoder->encodePassword($user, $data->password));
             $doctrine = $doctrine->getManager();
             $doctrine->persist($user);
             $doctrine->flush();
@@ -45,18 +83,18 @@ class LoginController extends AbstractController
         try {
             $data = json_decode($req->getContent());
 
-            if (empty($data->login))
+            if (empty($data->username))
                 throw new \Exception('Login é obrigatório');
-            if (empty($data->senha))
+            if (empty($data->password))
                 throw new \Exception('Senha é obrigatório');
 
             $doctrine  = $this->getDoctrine();
 
             $usuario = $doctrine->getRepository(User::class)->findOneBy([
-                'username' => $data->login,
+                'username' => $data->username,
             ]);
 
-            if (!$encoder->isPasswordValid($usuario, $data->senha)) {
+            if (!$encoder->isPasswordValid($usuario, $data->password)) {
                 return  $this->json([
                     'erro' => 'Usuário ou senha inválidos'
                 ], Response::HTTP_UNAUTHORIZED);
@@ -75,23 +113,23 @@ class LoginController extends AbstractController
     }
 
     /**
-     * @Route("/recuperar/{id}", name="recuperar", methods={"POST"})
+     * @Route("/recuperar", name="recuperar", methods={"POST"})
      */
     public function recuperar(Request $req, UserPasswordEncoderInterface $encoder)
     {
         try {
             $data = json_decode($req->getContent());
             $doctrine  = $this->getDoctrine();
-            if (empty($data->login))
+            if (empty($data->username))
                 throw new \Exception('Login é obrigatório');
-            if (empty($data->senha))
+            if (empty($data->password))
                 throw new \Exception('Senha é obrigatório');
 
             $usuario = $doctrine->getRepository(User::class)->findOneBy([
-                'username' => $data->login,
+                'username' => $data->username,
             ]);
 
-            if (!$encoder->isPasswordValid($usuario, $data->senha)) {
+            if (!$encoder->isPasswordValid($usuario, $data->password)) {
                 return  $this->json([
                     'erro' => 'Usuário ou senha inválidos'
                 ], Response::HTTP_UNAUTHORIZED);
