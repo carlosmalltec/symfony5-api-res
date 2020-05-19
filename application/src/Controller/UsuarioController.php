@@ -21,9 +21,9 @@ class UsuarioController extends AbstractController
     {
         try {
             if (!empty($usuario = $this->getDoctrine()->getRepository(Usuario::class)->findAll())) {
-                return $this->json([
+                return $this->json(
                     $usuario
-                ]);
+                );
             }
             throw new \Exception('Não existe dado cadastrado');
         } catch (\Exception $th) {
@@ -38,9 +38,9 @@ class UsuarioController extends AbstractController
     {
         try {
             if (!empty($usuario = $this->getDoctrine()->getRepository(Usuario::class)->find($id))) {
-                return $this->json([
+                return $this->json(
                     $usuario
-                ]);
+                );
             }
             throw new \Exception('Não foi possível encontrar o usuário');
         } catch (\Exception $th) {
@@ -75,7 +75,7 @@ class UsuarioController extends AbstractController
             $doctrine = $this->getDoctrine()->getManager();
             $doctrine->persist($usuario); // objeto do usuário
             $doctrine->flush(); //salva os dados no banco
-            return new Response('Usuário cadastro com sucesso!', Response::HTTP_OK);
+            return $this->json($usuario,Response::HTTP_OK);
         } catch (\Exception $th) {
             return new Response($th->getMessage(), 404);
         }
@@ -105,8 +105,7 @@ class UsuarioController extends AbstractController
                 //Doctrine
                 $manager = $doctrine->getManager();
                 $manager->flush(); //salva os dados no banco
-
-                return new Response('Usuário atualizado com sucesso!', Response::HTTP_OK);
+                return $this->json($usuario,Response::HTTP_OK);
             }
             throw new \Exception('Não foi possível encontrar o usuário');
         } catch (\Exception $th) {
