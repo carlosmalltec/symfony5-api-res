@@ -13,9 +13,9 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class LoginController extends AbstractController
 {
     /**
-     * @Route("/register", name="register", methods={"POST"})
+     * @Route("/create", name="create", methods={"POST"})
      */
-    public function register(Request $req, UserPasswordEncoderInterface $encoder)
+    public function create(Request $req, UserPasswordEncoderInterface $encoder)
     {
         try {
             $data = json_decode($req->getContent());
@@ -31,18 +31,16 @@ class LoginController extends AbstractController
             $doctrine = $doctrine->getManager();
             $doctrine->persist($user);
             $doctrine->flush();
-
-            return new Response('Usuário cadastro com sucesso', Response::HTTP_CREATED);
-
+            return $this->json($user, Response::HTTP_CREATED);
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 401);
+            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
         }
     }
 
     /**
      * @Route("/login", name="login", methods={"POST"})
      */
-    public function index(Request $req, UserPasswordEncoderInterface $encoder)
+    public function login(Request $req, UserPasswordEncoderInterface $encoder)
     {
         try {
             $data = json_decode($req->getContent());
@@ -73,6 +71,41 @@ class LoginController extends AbstractController
             throw new \Exception('Usuário não encontrado');
         } catch (\Exception $th) {
             return new Response($th->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @Route("/recuperar/{id}", name="recuperar", methods={"POST"})
+     */
+    public function recuperar(Request $req, UserPasswordEncoderInterface $encoder)
+    {
+        try {
+            $data = json_decode($req->getContent());
+            $doctrine  = $this->getDoctrine();
+            if (empty($data->login))
+                throw new \Exception('Login é obrigatório');
+            if (empty($data->senha))
+                throw new \Exception('Senha é obrigatório');
+
+            $usuario = $doctrine->getRepository(User::class)->findOneBy([
+                'username' => $data->login,
+            ]);
+
+            if (!$encoder->isPasswordValid($usuario, $data->senha)) {
+                return  $this->json([
+                    'erro' => 'Usuário ou senha inválidos'
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
+            if (!empty($usuario)) {
+                return  $this->json([
+                    'ok' => 'Enviamos um e-mail com os procedimentos para recuperar a senha'
+                ], Response::HTTP_ACCEPTED);
+            }
+
+            return new Response('Usuário cadastro com sucesso', Response::HTTP_CREATED);
+        } catch (\Exception $th) {
+            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
         }
     }
 }
