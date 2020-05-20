@@ -125,8 +125,7 @@ class ProdutoController extends AbstractController
                 $manager = $doctrine->getManager();
                 $manager->remove($produto);
                 $manager->flush();
-
-                return $this->json($produto,Response::HTTP_OK);
+                return  $this->json(['msg' => "Produto {$produto->getTitulo()} excluído com sucesso", Response::HTTP_OK]);
             }
             throw new \Exception('Não foi possível encontrar o produto');
         } catch (\Exception $th) {
