@@ -24,13 +24,11 @@ class LoginController extends AbstractController
     {
         try {
             if (!empty($usuario = $this->getDoctrine()->getRepository(User::class)->findAll())) {
-                return $this->json(
-                    $usuario
-                );
+                return  $this->json($usuario);
             }
             throw new \Exception('Não existe dado cadastrado');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+            return  $this->json(['msg' => $th->getMessage()]);
         }
     }
 
@@ -41,13 +39,11 @@ class LoginController extends AbstractController
     {
         try {
             if (!empty($usuario = $this->getDoctrine()->getRepository(User::class)->find($id))) {
-                return $this->json(
-                    $usuario
-                );
+                return  $this->json(['msg' => 'Usuário encontrado', 'usuario' => $usuario]);
             }
             throw new \Exception('Não foi possível encontrar o usuário');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+            return  $this->json(['msg' => $th->getMessage()]);
         }
     }
 
@@ -70,9 +66,9 @@ class LoginController extends AbstractController
             $doctrine = $doctrine->getManager();
             $doctrine->persist($user);
             $doctrine->flush();
-            return $this->json($user, Response::HTTP_CREATED);
+            return  $this->json(['msg' => 'Cadastro realizado com sucesso!', 'usuario' => $user]);
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+            return  $this->json(['msg' => $th->getMessage()]);
         }
     }
 
@@ -96,20 +92,16 @@ class LoginController extends AbstractController
             ]);
 
             if (!$encoder->isPasswordValid($usuario, $data->password)) {
-                return  $this->json([
-                    'erro' => 'Usuário ou senha inválidos'
-                ], Response::HTTP_UNAUTHORIZED);
+                throw new \Exception('Usuário ou senha inválidos');
             }
 
             if (!empty($usuario)) {
                 $token = JWT::encode(['id' => $usuario->getId(), 'username' => $usuario->getUsername()], $_ENV['APP_SECRET'], 'HS256');
-                return $this->json([
-                    'token' => $token
-                ]);
+                return  $this->json(['msg' => 'Token gerado com sucesso', 'token' => $token,'usuario'=>$usuario]);
             }
             throw new \Exception('Usuário não encontrado');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), Response::HTTP_BAD_REQUEST);
+            return  $this->json(['msg' => $th->getMessage()]);
         }
     }
 
@@ -133,11 +125,11 @@ class LoginController extends AbstractController
                 if ($this->enviarEmail()) {
                     $msg = 'Enviamos um e-mail com os procedimentos para recuperar senha!';
                 }
-                return  $this->json(['msg' => $msg, Response::HTTP_ACCEPTED]);
+                return  $this->json(['msg' => $msg, 'usuario' => $usuario->getUsername()]);
             }
-            return  $this->json('Nenhuma informação encontrada!', Response::HTTP_UNAUTHORIZED);
+            throw new \Exception('Nenhum usuário encontrado!');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
+            return  $this->json(['msg' => $th->getMessage()]);
         }
     }
 

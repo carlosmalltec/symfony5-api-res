@@ -21,13 +21,11 @@ class ProdutoController extends AbstractController
     {
         try {
             if (!empty($produto = $this->getDoctrine()->getRepository(Produto::class)->findAll())) {
-                return $this->json(
-                    $produto
-                );
+                return $this->json($produto);
             }
-            throw new \Exception('Não existe dado cadastrado');
+            throw new \Exception('Nenhum dado entrado');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 404);
+            return  $this->json(['msg' => $th->getMessage(),'produto'=>[]]);
         }
     }
 
@@ -38,13 +36,11 @@ class ProdutoController extends AbstractController
     {
         try {
             if (!empty($produto = $this->getDoctrine()->getRepository(Produto::class)->find($id))) {
-                return $this->json(
-                    $produto
-                );
+                return  $this->json(['msg' => 'Produto encontrado!','produto'=>$produto]);
             }
-            throw new \Exception('Não foi possível encontrar o usuário');
+            throw new \Exception('Nenhum dado entrado');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 404);
+            return  $this->json(['msg' => $th->getMessage(),'produto'=>[]]);
         }
     }
 
@@ -75,9 +71,9 @@ class ProdutoController extends AbstractController
             $doctrine = $this->getDoctrine()->getManager();
             $doctrine->persist($produto); // objeto do usuário
             $doctrine->flush(); //salva os dados no banco
-            return $this->json($produto,Response::HTTP_OK);
+            return  $this->json(['msg' => 'Produto cadastrado!','produto'=>$produto]);
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 404);
+            return  $this->json(['msg' => $th->getMessage(),'produto'=>[]]);
         }
     }
 
@@ -105,11 +101,11 @@ class ProdutoController extends AbstractController
                 //Doctrine
                 $manager = $doctrine->getManager();
                 $manager->flush(); //salva os dados no banco
-                return $this->json($produto,Response::HTTP_OK);
+                return  $this->json(['msg' => 'Produto atualizado!','produto'=>$produto]);
             }
             throw new \Exception('Não foi possível encontrar o produto');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 404);
+            return  $this->json(['msg' => $th->getMessage(),'produto'=>[]]);
         }
     }
 
@@ -125,11 +121,11 @@ class ProdutoController extends AbstractController
                 $manager = $doctrine->getManager();
                 $manager->remove($produto);
                 $manager->flush();
-                return  $this->json(['msg' => "Produto {$produto->getTitulo()} excluído com sucesso", Response::HTTP_OK]);
+                return  $this->json(['msg' => "Produto {$produto->getTitulo()} excluído com sucesso",'produto'=>[]]);
             }
             throw new \Exception('Não foi possível encontrar o produto');
         } catch (\Exception $th) {
-            return new Response($th->getMessage(), 404);
+            return  $this->json(['msg' => $th->getMessage(),'produto'=>[]]);
         }
     }
 }
