@@ -10,12 +10,9 @@ class UserDados extends Fixture
 {
     public function load(ObjectManager $manager)
     {
-        for ($i = 1; $i < 11; $i++) {
             $user = new User;
-            $user->setUsername('carlos'.$i)->setPassword(md5('123456'));
+            $user->setUsername('carlos')->setPassword('$argon2id$v=19$m=65536,t=4,p=1$FAMHkGyXg1WPt0AgvY/vNg$dyakRQ96Xts0x/10dmNiJOrHiAlQYbr7U6A+atn6G8M');
             $manager->persist($user);
             $manager->flush();
-        }
-        // docker exec -it symfony_php bin/console doctrine:fixtures:load
     }
 }
