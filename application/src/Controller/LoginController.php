@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Components\HelperEmail;
 use App\Entity\User;
 use Firebase\JWT\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -9,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Dotenv\Dotenv;
 
 /**
  * Prefixo para cada rota da controller
@@ -129,14 +129,27 @@ class LoginController extends AbstractController
             ]);
 
             if (!empty($usuario)) {
-                return  $this->json(
-                    ['msg'=>'Enviamos um e-mail com os procedimentos para recuperar senha!',
-                    Response::HTTP_ACCEPTED
-                    ]);
+                $msg = 'Não foi possível enviar o e-mail com os procedimento para recuperar sua senha';
+                if ($this->enviarEmail()) {
+                    $msg = 'Enviamos um e-mail com os procedimentos para recuperar senha!';
+                }
+                return  $this->json(['msg' => $msg, Response::HTTP_ACCEPTED]);
             }
             return  $this->json('Nenhuma informação encontrada!', Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $th) {
             return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
         }
+    }
+
+    public function enviarEmail()
+    {
+        $sendMail = new HelperEmail();
+        $sendMail->sendEmail(
+            ['carlosmalltec@gmail.com' => 'Carlos Santos'], //remetente
+            ['contatomalltec@gmail.com' => 'Carlos Santos'], // destinatario
+            'Recuperar senha', //assunto
+            'Clique no link para recuperar sua senha'
+        ); //corpo da mensagem (TEXT)
+        return $sendMail->getResult();
     }
 }
