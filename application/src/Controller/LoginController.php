@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Dotenv\Dotenv;
 
 /**
  * Prefixo para cada rota da controller
@@ -19,7 +20,7 @@ class LoginController extends AbstractController
     /**
      * @Route("/index", name="index", methods="GET")
      */
-    public function index(): Response
+    public function index()
     {
         try {
             if (!empty($usuario = $this->getDoctrine()->getRepository(User::class)->findAll())) {
@@ -101,7 +102,7 @@ class LoginController extends AbstractController
             }
 
             if (!empty($usuario)) {
-                $token = JWT::encode(['id' => $usuario->getId(), 'username' => $usuario->getUsername()], 'chave', 'HS256');
+                $token = JWT::encode(['id' => $usuario->getId(), 'username' => $usuario->getUsername()], $_ENV['APP_SECRET'], 'HS256');
                 return $this->json([
                     'token' => $token
                 ]);
@@ -115,33 +116,25 @@ class LoginController extends AbstractController
     /**
      * @Route("/recuperar", name="recuperar", methods={"POST"})
      */
-    public function recuperar(Request $req, UserPasswordEncoderInterface $encoder)
+    public function recuperar(Request $req)
     {
         try {
             $data = json_decode($req->getContent());
             $doctrine  = $this->getDoctrine();
             if (empty($data->username))
                 throw new \Exception('Login é obrigatório');
-            if (empty($data->password))
-                throw new \Exception('Senha é obrigatório');
 
             $usuario = $doctrine->getRepository(User::class)->findOneBy([
                 'username' => $data->username,
             ]);
 
-            if (!$encoder->isPasswordValid($usuario, $data->password)) {
-                return  $this->json([
-                    'erro' => 'Usuário ou senha inválidos'
-                ], Response::HTTP_UNAUTHORIZED);
-            }
-
             if (!empty($usuario)) {
-                return  $this->json([
-                    'ok' => 'Enviamos um e-mail com os procedimentos para recuperar a senha'
-                ], Response::HTTP_ACCEPTED);
+                return  $this->json(
+                    ['msg'=>'Enviamos um e-mail com os procedimentos para recuperar senha!',
+                    Response::HTTP_ACCEPTED
+                    ]);
             }
-
-            return new Response('Usuário cadastro com sucesso', Response::HTTP_CREATED);
+            return  $this->json('Nenhuma informação encontrada!', Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $th) {
             return new Response($th->getMessage(), Response::HTTP_UNAUTHORIZED);
         }

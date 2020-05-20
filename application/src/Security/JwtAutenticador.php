@@ -54,7 +54,8 @@ class JwtAutenticador extends AbstractGuardAuthenticator
 
     public function supports(Request $request)
     {
-        return $request->getPathInfo() !== '/usuario/login' && $request->getPathInfo() !== '/usuario/recuperar';
+        return !in_array($request->getPathInfo(), $this->Rotas());
+        // return $request->getPathInfo() !== '/usuario/login' && $request->getPathInfo() !== '/usuario/recuperar';
     }
 
     /**
@@ -89,7 +90,7 @@ class JwtAutenticador extends AbstractGuardAuthenticator
         );
 
         try {
-            return JWT::decode($token, 'chave', ['HS256']);
+            return JWT::decode($token, $_ENV['APP_SECRET'], ['HS256']);
         } catch (\Exception $e) {
             return false;
         }
@@ -155,5 +156,13 @@ class JwtAutenticador extends AbstractGuardAuthenticator
     public function supportsRememberMe()
     {
         return false;
+    }
+    // Rotas permitidas
+    public function Rotas()
+    {
+        return [
+            '/usuario/login',
+            '/usuario/recuperar'
+        ];
     }
 }
